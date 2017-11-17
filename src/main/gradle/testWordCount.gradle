@@ -1,0 +1,127 @@
+def hdfsHomeDir = lookupDef('hdfsHomeDir')
+def projectPath = "${hdfsHomeDir}/example-project"
+def keywordToCheck = "Government"
+
+// Clean test results
+hadoopShellJob('cleanResultsJob') {
+  uses "hadoop fs -rm -r ${projectPath}/word-count*"
+}
+
+// Copy the text file from the exploded Azkaban zip to HDFS
+hadoopShellJob('uploadResourceFilesJob') {
+  usesCommands([
+    "hadoop fs -mkdir -p ${projectPath}",
+    "hadoop fs -copyFromLocal -f ./text ${projectPath}"
+  ])
+}
+
+// Implementation of word count with an Apache Hive job
+hiveJob('wordCountHiveJob') {
+  uses 'hive/WordCount.q'
+  writes files: [
+    'outputPath': "${projectPath}/word-count-apache-hive"
+  ]
+}
+
+// Implementation of word count with an Apache Pig job
+pigJob('wordCountPigJob') {
+  uses 'pig/WordCount.pig'
+  reads files: [
+    'inputPath': "${projectPath}/text"
+  ]
+  writes files: [
+    'outputPath': "${projectPath}/word-count-apache-pig"
+  ]
+}
+
+// Implementation of word count with Spark job
+sparkJob('wordCountSparkJob') {
+  def params = ["${projectPath}/text", "${projectPath}/word-count-spark"]
+  def flags = ['verbose', 'version']
+  uses 'com.microsoft.spark.WordCount'       // Required if executing a jar.
+  executes './lib/azkaban-dsl-example.jar'   // Required. Sets execution-jar=mySparkJob.jar in the job file.
+  driverMemory '512M'                        // This sets the amount of memory used by the Spark driver. 
+  executorMemory '512M'                      // This sets the amount of memory used by Spark executors.
+  numExecutors 2                             // This sets the number of Spark executors.
+  executorCores 1                            // This sets the number of executor cores in each Spark executor.
+  jars 'foo.jar,bar.jar'          // The jars which should be added to the classpath of Spark jobs during execution.       
+  enableFlags flags               // Multiple flags can be passed in this way.
+  set sparkConfs: [
+    'spark.authenticate': 'false',           // Sets conf.spark.authenticate=true in the job file
+    'key1': 'value1',                        // Other configurations can be passed in similar way
+    'key2': 'value2'
+  ]
+  appParams params                           // Usually you would pass input and output file paths.
+  queue 'default'                            // Sets queue=default in the job file
+  set properties: [
+    'master': 'yarn-cluster'
+  ]
+}
+
+// Compare the results of the word count jobs
+hadoopShellJob('checkResultsJob') {
+  uses "bash ./bash/checkResults.sh ${projectPath} ${keywordToCheck}"
+}
+
+workflow('wordCount') {
+  addJob('uploadResourceFilesJob') {}
+
+  addJob('wordCountHiveJob') {
+    depends 'uploadResourceFilesJob'
+  }
+
+  addJob('wordCountPigJob') {
+    depends 'uploadResourceFilesJob'
+  }
+
+  addJob('wordCountSparkJob') {
+    depends 'uploadResourceFilesJob'
+  }
+
+  addJob('checkResultsJob') {
+    depends 'wordCountHiveJob', 'wordCountPigJob', 'wordCountSparkJob'
+  }
+
+  addJob('cleanResultsJob') {
+    depends 'checkResultsJob'
+  }
+
+  targets 'cleanResultsJob'
+}
+
+workflow('wordCount2') {
+  addJob('uploadResourceFilesJob') {}
+
+  addJob('wordCountHiveJob') {
+    depends 'uploadResourceFilesJob'
+  }
+
+  addJob('wordCountPigJob') {
+    depends 'uploadResourceFilesJob'
+  }
+
+  addJob('sparkSubmitJob', 'wordCountSparkJob') {
+    set properties: [
+      'class': 'com.microsoft.spark.WordCount',
+      'params': "${projectPath}/text ${projectPath}/word-count-spark"
+    ]
+    depends 'uploadResourceFilesJob'
+  }
+
+  addJob('checkResultsJob') {
+    depends 'wordCountHiveJob', 'wordCountPigJob', 'wordCountSparkJob'
+  }
+
+  addJob('cleanResultsJob') {
+    depends 'checkResultsJob'
+  }
+  
+  targets 'cleanResultsJob'
+}
+
+hadoop {
+  addWorkflow('wordCount', 'myWordCount') {
+  }
+  addWorkflow('wordCount2', 'myWordCount2') {
+  }
+}

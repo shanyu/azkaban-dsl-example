@@ -1,0 +1,16 @@
+
+workflow('sparkPi') {
+  addJob('sparkSubmitJob', 'sparkPiJob') {
+    set properties: [
+      'class': 'org.apache.spark.examples.SparkPi',
+      'execute.jar': '/usr/hdp/current/spark2-client/examples/jars/spark-examples.jar',
+      'params': '10'
+    ]
+  }
+  targets 'sparkPiJob'
+}
+
+hadoop {
+  addWorkflow('sparkPi') {
+  }
+}

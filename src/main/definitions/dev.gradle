@@ -1,0 +1,4 @@
+definitionSet defs: [
+    hdfsHomeDir: "hdfs://mycluster",
+    notifyEmail: "yourUserName@yourEmailDomain.com"
+]

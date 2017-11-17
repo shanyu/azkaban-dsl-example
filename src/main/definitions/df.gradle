@@ -1,0 +1,4 @@
+definitionSet defs: [
+    hdfsHomeDir: "wasb://",
+    notifyEmail: "yourUserName@yourEmailDomain.com"
+]

@@ -1,0 +1,71 @@
+plugins {
+  id 'java'
+  id 'scala'
+  id "com.linkedin.gradle.hadoop.HadoopPlugin" version "0.13.3"
+}
+
+jar.baseName = 'azkaban-dsl-example'
+
+// Task to generate the Gradle wrapper
+task wrapper(type: Wrapper) {
+  gradleVersion = '2.13'
+}
+
+repositories {
+  jcenter()
+}
+
+dependencies {
+  compile 'org.scala-lang:scala-library:2.11.11'
+  compile 'org.apache.spark:spark-core_2.11:2.1.1'
+}
+
+
+// Hadoop DSL Automatic Builds will configure the Hadoop DSL for each definitions file found in
+// "src/main/definitions". The Automatic Build will apply the definition file, apply your user
+// profile file from "src/main/profiles/<userName>.gradle" (if it exists) and then apply any
+// .gradle files in "src/main/gradle". See the Hadoop Plugin User Guide for more details.
+hadoopDslBuild.autoSetup()
+
+startHadoopZips.dependsOn buildAzkabanFlows
+build.dependsOn buildHadoopZips
+
+hadoopZip {
+  libPath = "lib" // Causes the dependencies to be placed in the "lib" folder inside each zip
+
+  // Use `base` to declare files common to all the zips you want to declare (as you might have
+  // different zips for different Hadoop clusters or Azkaban instances, for whatever reason). If
+  // you just need a single zip, there's no point in using `base` and you can skip it.
+  base {
+    from("src/main/bash") {
+      into "bash"   // Bash scripts will be in the "bash" subdirectory in the zip
+    }
+    from("src/main/hive") {
+      into "hive"  // Hive scripts will be in the "hive" subdirectory in the zip
+    }
+    from("src/main/pig") {
+      into "pig"   // Pig scripts will be in the "pig" subdirectory in the zip
+    }
+   }
+
+  // Now declare each of your zips, giving them unique names.
+  zip("azkabanDev") {
+    from("resources/dev") {
+      into "text"
+    }
+    from { fileTree("azkaban/dev").files }
+  }
+}
+
+// Adding the following exclusion rules will cause the matching dependencies to be excluded from
+// your Hadoop zips. Since the jars for these dependencies are almost always pre-installed on your
+// Hadoop cluster, you should add these exclusions for all your Hadoop Plugin projects. These rules
+// will reduce the size of your Azkaban zips and lessen the chance of uploading a dependency that
+// is incompatible with the jars already installed on your Hadoop cluster.
+configurations.hadoopRuntime {
+  exclude group: 'org.apache.hadoop'
+  exclude group: 'org.apache.hive'
+  exclude group: 'org.apache.pig'
+  exclude group: 'org.apache.spark'
+  exclude group: 'org.scala-lang'
+}

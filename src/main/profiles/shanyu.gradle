@@ -1,0 +1,6 @@
+// Each developer on your team can override the default definition set declared at the top of the
+// workflows.gradle file with their own values for testing.
+definitionSet defs: [
+    hdfsHomeDir: "hdfs://mycluster/shanyu",
+    notifyEmail: "myEmail@myEmailDomain.com",
+]
