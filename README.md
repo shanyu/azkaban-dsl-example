@@ -1,6 +1,9 @@
 ## Azkaban DSL examples that works on HDInsight clusters
 
-Make sure you install an Azkaban server on headnode or edgenode.
+This is adapted from example-project at:
+https://github.com/linkedin/linkedin-gradle-plugin-for-apache-hadoop
+
+Make sure you install an Azkaban server on headnode or edgenode of HDInsight cluster.
 Then ssh to that node.
 
 ### Build

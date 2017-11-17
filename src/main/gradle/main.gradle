@@ -1,3 +1,4 @@
+// The following fields only need to be declared in hadoop block once
 hadoop {
   buildPath "azkaban" // Declare the output folder for the compiled Azkaban files
   cleanPath true // Automatically clean up the output folder before each new build
@@ -11,19 +12,19 @@ hadoop {
   }
 }
 
-// Generic with spark-submit job
+// Generic hadoop shell job that calls spark-submit
 hadoopShellJob('sparkSubmitJob') {
   // must use single quote here to replace variables at runtime from properties
   uses 'spark-submit --class ${class} --master ${master} --driver-memory ${driver.memory} --executor-memory ${executor.memory} --executor-cores ${executor.cores} --num-executors ${num.executors} ${execute.jar} ${params}'
   set properties: [
-    'class': 'com.microsoft.spark.WordCount',
+    'class': 'must overwrite',
     'master': 'yarn-cluster',
     'driver.memory': '512m',
     'executor.memory': '512m',
     'executor.cores': '1',
     'num.executors': 2,
     'execute.jar': 'lib/azkaban-dsl-example.jar',
-    'params': ""
+    'params': "must overwrite"
   ]
 }
 
