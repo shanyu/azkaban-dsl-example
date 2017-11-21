@@ -1,4 +1,5 @@
 definitionSet defs: [
-    hdfsHomeDir: "hdfs://mycluster",
-    notifyEmail: "yourUserName@yourEmailDomain.com"
+  envName: "dev",
+  hdfsHomeDir: "hdfs://mycluster",
+  notifyEmail: "yourUserName@yourEmailDomain.com"
 ]

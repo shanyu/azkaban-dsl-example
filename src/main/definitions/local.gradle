@@ -1,5 +1,5 @@
 definitionSet defs: [
-  envName: "df",
-  hdfsHomeDir: "wasb://",
+  envName: "local",
+  hdfsHomeDir: "hdfs://mycluster",
   notifyEmail: "yourUserName@yourEmailDomain.com"
 ]

@@ -28,3 +28,25 @@ hadoopShellJob('sparkSubmitJob') {
   ]
 }
 
+hadoopShellJob('uploadToDfsJob') {
+  def envName = lookupDef('envName')
+  if (envName.equals('local')) {
+    usesCommands([
+      'hadoop fs -mkdir -p ${dfs.prefix}${dfs.path}',
+      'hadoop fs -copyFromLocal -f ${local.path} ${dfs.prefix}${dfs.path}'
+    ])
+  }
+  else {
+    // make sure to define properties: wasb.account, wasb.container, wasb.key for non local env
+    uses 'blobxfer --storageaccountkey ${wasb.key} --remoteresource ${dfs.path} ${wasb.account} ${wasb.container} ${local.path}'
+  }
+  set properties: [
+    'dfs.prefix': 'hdfs://mycluster/',
+    'dfs.path': 'must overwrite',
+    'local.path': 'must overwrite',
+    'wasb.account': 'must overwrite',
+    'wasb.key': 'must overwrite',
+    'wasb.container': 'must overwrite'
+  ]
+}
+

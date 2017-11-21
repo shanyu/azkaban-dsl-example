@@ -1,18 +1,11 @@
 def hdfsHomeDir = lookupDef('hdfsHomeDir')
-def projectPath = "${hdfsHomeDir}/example-project"
+def hdfsPath='/example-project'
+def projectPath = "${hdfsHomeDir}${hdfsPath}"
 def keywordToCheck = "Government"
 
 // Clean test results
 hadoopShellJob('cleanResultsJob') {
   uses "hadoop fs -rm -r ${projectPath}/word-count*"
-}
-
-// Copy the text file from the exploded Azkaban zip to HDFS
-hadoopShellJob('uploadResourceFilesJob') {
-  usesCommands([
-    "hadoop fs -mkdir -p ${projectPath}",
-    "hadoop fs -copyFromLocal -f ./text ${projectPath}"
-  ])
 }
 
 // Implementation of word count with an Apache Hive job
@@ -64,7 +57,12 @@ hadoopShellJob('checkResultsJob') {
 }
 
 workflow('wordCount') {
-  addJob('uploadResourceFilesJob') {}
+  addJob('uploadToDfsJob', 'uploadResourceFilesJob') {
+    set properties: [
+      'local.path': './text',
+      'dfs.path': "${hdfsPath}"
+    ]
+  }
 
   addJob('wordCountHiveJob') {
     depends 'uploadResourceFilesJob'
@@ -90,7 +88,12 @@ workflow('wordCount') {
 }
 
 workflow('wordCount2') {
-  addJob('uploadResourceFilesJob') {}
+  addJob('uploadToDfsJob', 'uploadResourceFilesJob') {
+    set properties: [
+      'local.path': './text',
+      'dfs.path': "${hdfsPath}"
+    ]
+  }
 
   addJob('wordCountHiveJob') {
     depends 'uploadResourceFilesJob'

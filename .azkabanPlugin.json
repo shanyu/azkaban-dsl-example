@@ -1,7 +1,7 @@
 {
     "azkabanUrl": "http://localhost:8081",
     "azkabanProjName": "testproj",
-    "azkabanZipTask": "azkabanDevHadoopZip",
+    "azkabanZipTask": "azkabanLocalHadoopZip",
     "azkabanValidatorAutoFix": "",
     "azkabanUserName": "azkaban",
     "azkabanPassword": "azkaban"

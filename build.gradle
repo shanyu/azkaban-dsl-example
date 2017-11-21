@@ -49,11 +49,25 @@ hadoopZip {
    }
 
   // Now declare each of your zips, giving them unique names.
+  zip("azkabanLocal") {
+    from("resources/dev") {
+      into "text"
+    }
+    from { fileTree("azkaban/local").files }
+  }
+
   zip("azkabanDev") {
     from("resources/dev") {
       into "text"
     }
     from { fileTree("azkaban/dev").files }
+  }
+
+  zip("azkabanDF") {
+    from("resources/dev") {
+      into "text"
+    } 
+    from { fileTree("azkaban/df").files }
   }
 }
 
