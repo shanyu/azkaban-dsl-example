@@ -1,8 +1,8 @@
 {
-    "azkabanUrl": "http://localhost:8081",
+    "azkabanUrl": "http://hdiazkaban.westus.cloudapp.azure.com",
     "azkabanProjName": "testproj",
     "azkabanZipTask": "azkabanLocalHadoopZip",
     "azkabanValidatorAutoFix": "",
     "azkabanUserName": "azkaban",
-    "azkabanPassword": "azkaban"
+    "azkabanPassword": "password"
 }

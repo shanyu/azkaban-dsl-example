@@ -1,0 +1,15 @@
+
+workflow('helloworld') {
+  job('helloJob') {
+    set properties: [
+      'type': 'helloworld',
+      'word': 'this is an example',
+    ]
+  }
+  targets 'helloJob'
+}
+
+hadoop {
+  addWorkflow('helloworld') {
+  }
+}

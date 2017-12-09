@@ -1,2 +1,5 @@
 azkaban/
 build/
+.azkabanPlugin.json
+.hadoopValidatorProperties
+.gradle
