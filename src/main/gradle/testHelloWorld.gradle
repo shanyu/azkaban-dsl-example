@@ -1,12 +1,20 @@
 
 workflow('helloworld') {
+  // Job type helloworld output property THEWORD
   job('helloJob') {
     set properties: [
       'type': 'helloworld',
       'word': 'this is an example',
     ]
   }
-  targets 'helloJob'
+
+  // Downstream job can use property THEWORD
+  commandJob('getTheWord') {
+    uses 'echo The word is ${THEWORD}'
+    depends 'helloJob'
+  }
+
+  targets 'getTheWord'
 }
 
 hadoop {
